@@ -1,0 +1,354 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<title>Cicular Div</title>
+        <script type="text/javascript" src="jquery-1.7.2.js"></script>
+        <script src="hashtable.js"></script>
+        <link rel="stylesheet" type="text/css" href="./index2.css" />
+</head>
+<script type="text/javascript">
+var maxX = 0;
+var maxY = 0;
+var relationList = [];
+var run = true;
+var pointTable = new HashTable({});
+var goalFrameRate = 40;
+
+var inBang = false;
+var dragging = null;
+var dragoffset = [0,0];
+
+var mousePos = [0, 0];
+
+var renderNodes = function(nodes){
+   nodes.each(function(){
+      node = $("#"+this.id);
+
+      //Possition Node
+      radius = getRadius(node);
+      randX = radius+Math.random()*(maxX-(radius*2));
+      randY = radius+Math.random()*(maxY-(radius*2));
+
+      pos = topLeftFromCenter([randX, randY], radius);
+      node.css('left', pos[0]+'px');
+      node.css('top', pos[1]+'px');
+
+      //add to pointTable
+      pointTable.setItem(this.id, [[randX, randY], node, getRadius(node)]);
+
+      //Parse Relations
+      relations = this.children[0].innerHTML.split(',');
+      for(i in relations){
+          relationList.push([this.id, relations[i]]);
+      }
+   });
+}
+
+var topLeftFromCenter = function(centerPoint, radius){
+   return [centerPoint[0]-radius, centerPoint[1]-radius];
+}
+
+var addOrModifyNode = function(newPointTable, name, Cpos, dv){
+   if(!newPointTable.hasItem(name)){
+      newPointTable.setItem(name, [Cpos[0]+(dv[0]),Cpos[1]+(dv[1]) ]);
+   }else{
+      oldpoint = newPointTable.getItem(name);
+      newPointTable.setItem(name, [oldpoint[0]+(dv[0]),oldpoint[1]+(dv[1]) ]);
+   }
+   return newPointTable;
+}
+
+var calculateFrame = function(){
+   starttime = new Date().getTime();
+   newPointTable = new HashTable({});
+
+   //calculate attactions
+   for(i=0; i<relationList.length; i++){
+      node1 = pointTable.getItem(relationList[i][0]);
+      node2 = pointTable.getItem(relationList[i][1]);
+      node1Pos = node1[0];
+      node2Pos = node2[0];
+
+      vx = node2Pos[0]-node1Pos[0];
+      vy = node2Pos[1]-node1Pos[1];
+
+      truemag = Math.sqrt(vx*vx+vy*vy);
+      mag = truemag - node1[2] - node2[2];
+      //mag = Math.sqrt(vx*vx+vy*vy);
+
+      vx /= truemag;
+      vy /= truemag;
+
+      if(mag < 0){
+         mag = 0;
+      }
+
+      //force = ((node1[2]) * (node2[2]) * mag)/(Math.abs(node1[2]+node2[2])*300);
+      //force = ((node1[2]) * (node2[2]) * mag)/(10000);
+      force = (32 * 32 * mag)/(10000);
+
+      //console.log(relationList[i][0] + " is attracted to " + relationList[i][1] + " with a force of "+ dv);
+      addOrModifyNode(newPointTable, relationList[i][0], [node1Pos[0], node1Pos[1]], [vx*force, vy*force]);
+      //addOrModifyNode(newPointTable, relationList[i][1], [node2Pos[0], node2Pos[1]], [-vx*force, -vy*force]);
+   }
+   //endattractions = new Date().getTime();
+   //console.log("attraction timeing:"+(endattractions-starttime));
+
+   //calculate repulsions
+   pointKeys = pointTable.keys()
+   for(x=0; x<pointKeys.length; x++){
+      node1 = pointTable.getItem(pointKeys[x]);
+      node1Pos = node1[0];
+
+      //calculate repulsions from other nodes
+      for(y=x; y<pointKeys.length; y++){
+         if(x==y){
+            continue;
+         }
+
+         node2 = pointTable.getItem(pointKeys[y]);
+         node2Pos = node2[0];
+
+         vx = node2Pos[0]-node1Pos[0];
+         vy = node2Pos[1]-node1Pos[1];
+
+         truemag = Math.sqrt(vx*vx+vy*vy);
+         mag = truemag - node1[2] - node2[2];
+         // mag = Math.sqrt(vx*vx+vy*vy);
+
+         vx /= truemag;
+         vy /= truemag;
+
+         if(mag <= 0){
+            mag = Math.abs(mag)/2;
+            force = mag+20;
+         }else{
+            //force = ((20 * node1[2] * node2[2])/(mag*mag));
+            force = ((20 * 32 * 32)/(mag*mag));
+            //sanity...don't send a node flying just because it got really close to another
+            // this also leads to "sticking" sometimes.  I think it's also the cause of "jitters".
+            // a better repulsion force calc that approched an asymptote would work better, but an
+            // equivalent inverse one would need to be found that worked for attraction.
+            if(force>50){
+               force = 50;
+            }
+         }
+
+         //console.log(Nodes[x].id + " is repulsed by " + Nodes[y].id + " with a force of "+ force);
+         addOrModifyNode(newPointTable, pointKeys[x], [node1Pos[0], node1Pos[1]], [-vx*force, -vy*force]);
+         addOrModifyNode(newPointTable, pointKeys[y], [node2Pos[0], node2Pos[1]], [vx*force, vy*force]);
+      }
+
+      nodeAry = [node1Pos[0], node1Pos[1], node1[2]];
+
+      //calculate top repulsion
+      force = calculateRepulsion(nodeAry, [node1Pos[0], 0, 50]);
+      if(force[1]<0){force[1]= 10;}
+      addOrModifyNode(newPointTable, pointKeys[x], [node1Pos[0], node1Pos[1]], [force[0], force[1]]);
+
+      //calculate bottom repulsion
+      force = calculateRepulsion(nodeAry, [node1Pos[0], maxY, 50]);
+      if(force[1]>0){force[1]= -10;}
+      addOrModifyNode(newPointTable, pointKeys[x], [node1Pos[0], node1Pos[1]], [force[0], force[1]]);
+
+      //calculate left repulsion
+      force = calculateRepulsion(nodeAry, [0, node1Pos[1], 50]);
+      if(force[0]<0){force[0]= 10;}
+      addOrModifyNode(newPointTable, pointKeys[x], [node1Pos[0], node1Pos[1]], [force[0], force[1]]);
+
+      //calculate right repulsion
+      force = calculateRepulsion(nodeAry, [maxX, node1Pos[1], 50]);
+      if(force[0]>0){force[0]= -10;}
+      addOrModifyNode(newPointTable, pointKeys[x], [node1Pos[0], node1Pos[1]], [force[0], force[1]]);
+   }
+   //endrepulsions = new Date().getTime();
+   //console.log("repulsion timeing:"+(endrepulsions-endattractions));
+
+   //move nodes
+   keys = newPointTable.keys();
+   for(i=0; i<keys.length ;i++){
+      item = pointTable.getItem(keys[i]);
+
+      newX = newPointTable.getItem(keys[i])[0];
+      newY = newPointTable.getItem(keys[i])[1];
+      node = item[1];
+      radius = item[2];
+
+      if(keys[i]==dragging){
+         x = mousePos[0];
+         y = mousePos[1];
+
+         pointTable.setItem(keys[i], [[x-dragoffset[0]+radius, y-dragoffset[1]+radius], node, radius]);
+         node.css({left: (mousePos[0]-dragoffset[0])+"px",  top:(mousePos[1]-dragoffset[1])+"px"});
+      }else{
+         if(keys[i]=='bang'){
+            count = pointTable.getItem(keys[i])[1];
+            if(count <= 0){
+               pointTable.removeItem(keys[i]);
+               inBang = false;
+               setTimeout(function() {stop()},30000);
+            }else{
+               pos = pointTable.getItem(keys[i])[0];
+               pointTable.setItem(keys[i], [pos, count-1, radius]);
+            }
+         }else{
+            pointTable.setItem(keys[i], [[newX, newY], node, radius]);
+            pos = topLeftFromCenter([newX, newY], radius);
+            node.css({top: pos[1]+"px", left: pos[0]+"px"});
+         }
+      }
+   }
+
+   if(run){
+      renderTime = new Date().getTime()-starttime;
+      goalRenderTime = 1000/goalFrameRate;
+      if(renderTime > goalRenderTime){
+         console.log("It took "+renderTime+"ms to render the frame");
+      }
+      setTimeout(function() {calculateFrame()}, (goalRenderTime-renderTime));
+   }
+}
+
+var calculateRepulsion = function(point1, point2){
+   vx = point2[0]-point1[0];
+   vy = point2[1]-point1[1];
+
+   mag = Math.sqrt(vx*vx+vy*vy);
+   //mag = vx*vx+vy*vy;
+
+   vx /= mag;
+   vy /= mag;
+   force = (10 * 32 * 50)/(mag*mag);
+
+   return [-vx*force, -vy*force];
+}
+
+var rangeMap = function(xmin, xmax, ymin, ymax, x){
+   xrange = xmax-xmin;
+   yrange = ymax-ymin;
+
+   return (((x-xmin)*yrange)/xrange)+ymin;
+}
+
+var getRadius = function(node){
+   height = parseInt(node.css('height'))+4;
+   width = parseInt(node.css('width'))+4;
+   return height;
+}
+
+var stop = function(){
+  if(dragging==null  && !inBang){
+    run = false;
+  }
+}
+
+var start = function(){
+  run = true;
+}
+
+
+$(document).ready(function(){
+   $(document).mousemove(setMousePos);
+   maxX = $("#container").width();
+   maxY = $("#container").height();
+
+   nodes = $(".Node");
+   renderNodes(nodes);
+   nodes.mousedown(startDrag);
+   nodes.mouseup(endDrag);
+
+   //console.log(relationList);
+   $('#container').fadeIn(2000);
+
+   //set background onclick function (yea exploding)
+   $('#background').mousedown(Explode);
+
+   start();
+   calculateFrame();
+   setTimeout(function() {stop()},30000);
+});
+
+var setMousePos = function(event){
+   //$('#status').html(event.pageX +', '+ event.pageY);
+   mousePos = [event.pageX, event.pageY];
+}
+
+var startDrag = function(event){
+   start();
+   calculateFrame();
+   dragging = this.id;
+   dragoffset = [event.pageX-this.offsetLeft, event.pageY-this.offsetTop];
+}
+
+var endDrag = function(event){
+   dragging = null;
+   setTimeout(function() {stop()},30000);
+}
+
+var Explode = function(event){
+   //@todo, allow for multiple bangs by adding a random string to the end of the item name.
+   //make weeker and last longer?
+   inBang = true;
+   pointTable.setItem('bang', [[event.pageX, event.pageY], 20, 100]);
+   start();
+   //alert("BANG");
+}
+
+</script>
+<body>
+        <div id="header"><h2>dlgreen.com</h2><p>The home of dlgreen on the internet</p></div>
+	<div id="container">
+                <div id="background"></div>
+                <div id="node1" class="Node SmallCircle"><div class="NodeMetadata">node2,node3,node4,node30</div>Professional</div>
+		<div id="node2" class="Node XSmallCircle"><div class="NodeMetadata">node1</div><a href="https://www.resumonk.com/PkKGWexVVIu80EVeHIPGNQ">Resume</a></div>
+		<div id="node3" class="Node XSmallCircle"><div class="NodeMetadata">node1</div>Senior Architect</div>
+		<div id="node4" class="Node XSmallCircle"><div class="NodeMetadata">node1</div>04</div>
+
+                <div id="node11" class="Node SmallCircle"><div class="NodeMetadata">node12,node13,node14,node30</div>Family</div>
+		<div id="node12" class="Node XSmallCircle"><div class="NodeMetadata">node11</div>12</div>
+		<div id="node13" class="Node XSmallCircle"><div class="NodeMetadata">node11</div>13</div>
+		<div id="node14" class="Node XSmallCircle"><div class="NodeMetadata">node11</div>14</div>
+
+                <div id="node21" class="Node SmallCircle"><div class="NodeMetadata">node22,node23,node24,node30</div>Personal</div>
+		<div id="node22" class="Node XSmallCircle"><div class="NodeMetadata">node21</div>Boardgames</div>
+		<div id="node23" class="Node XSmallCircle"><div class="NodeMetadata">node21</div>Sailing</div>
+		<div id="node24" class="Node XSmallCircle"><div class="NodeMetadata">node21</div>Building</div>
+
+                <div id="node30" class="Node MediumCircle"><div class="NodeMetadata">node21,node11,node1</div>David Greenwald</div>
+
+
+		<!--<div id="node1" class="Node XSmallCircle"><div class="NodeMetadata">node2,node5,node11,node41</div>01</div>
+		<div id="node2" class="Node XSmallCircle"><div class="NodeMetadata">node3,node1</div>02</div>
+		<div id="node3" class="Node XSmallCircle"><div class="NodeMetadata">node4,node2</div>03</div>
+		<div id="node4" class="Node XSmallCircle"><div class="NodeMetadata">node5,node3</div>04</div>
+		<div id="node5" class="Node XSmallCircle"><div class="NodeMetadata">node1,node4</div>05</div>
+
+		<div id="node11" class="Node XSmallCircle"><div class="NodeMetadata">node12,node15,node1,node21</div>11</div>
+		<div id="node12" class="Node XSmallCircle"><div class="NodeMetadata">node13,node11</div>12</div>
+		<div id="node13" class="Node XSmallCircle"><div class="NodeMetadata">node14,node12</div>13</div>
+		<div id="node14" class="Node XSmallCircle"><div class="NodeMetadata">node15,node13</div>14</div>
+		<div id="node15" class="Node XSmallCircle"><div class="NodeMetadata">node11,node14</div>15</div>
+
+		<div id="node21" class="Node XSmallCircle"><div class="NodeMetadata">node22,node25,node11,node31</div>21</div>
+		<div id="node22" class="Node XSmallCircle"><div class="NodeMetadata">node23,node21</div>22</div>
+		<div id="node23" class="Node XSmallCircle"><div class="NodeMetadata">node24,node22</div>23</div>
+		<div id="node24" class="Node XSmallCircle"><div class="NodeMetadata">node25,node23</div>24</div>
+		<div id="node25" class="Node XSmallCircle"><div class="NodeMetadata">node21,node24</div>25</div>
+
+		<div id="node31" class="Node XSmallCircle"><div class="NodeMetadata">node32,node35,node21,node41</div>31</div>
+		<div id="node32" class="Node XSmallCircle"><div class="NodeMetadata">node33,node31</div>32</div>
+		<div id="node33" class="Node XSmallCircle"><div class="NodeMetadata">node34,node32</div>33</div>
+		<div id="node34" class="Node XSmallCircle"><div class="NodeMetadata">node35,node33</div>34</div>
+		<div id="node35" class="Node XSmallCircle"><div class="NodeMetadata">node31,node34</div>35</div>
+
+		<div id="node41" class="Node XSmallCircle"><div class="NodeMetadata">node42,node45,node31,node1</div>41</div>
+		<div id="node42" class="Node XSmallCircle"><div class="NodeMetadata">node43,node41</div>42</div>
+		<div id="node43" class="Node XSmallCircle"><div class="NodeMetadata">node44,node42</div>43</div>
+		<div id="node44" class="Node XSmallCircle"><div class="NodeMetadata">node45,node43</div>44</div>
+		<div id="node45" class="Node XSmallCircle"><div class="NodeMetadata">node41,node44</div>45</div>-->
+
+	</div>
+
+</body>
+</html>

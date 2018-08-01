@@ -1,0 +1,2 @@
+http://stackoverflow.com/questions/6278152/drawing-a-line-between-two-draggable-divs
+http://jsplumb.org/apidocs/files/jquery-jsPlumb-1-3-9-all-js.html

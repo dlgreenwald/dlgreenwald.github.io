@@ -1,0 +1,142 @@
+.XSmallCircle {
+    -moz-user-select: none;
+    background: none repeat scroll 0 0 blue;
+    border: 2px solid black;
+    border-radius: 32px 32px 32px 32px;
+    box-shadow: 0 0 1px black;
+    color: white;
+    cursor: pointer;
+    height: 28px;
+    overflow: hidden;
+    padding: 16px;
+    position: absolute;
+    text-align: center;
+    width: 28px;
+}
+.SmallCircle {
+    -moz-user-select: none;
+    background: none repeat scroll 0 0 blue;
+    border: 2px solid black;
+    border-radius: 64px 64px 64px 64px;
+    box-shadow: 0 0 1px black;
+    color: white;
+    cursor: pointer;
+    height: 60px;
+    overflow: hidden;
+    padding: 32px;
+    position: absolute;
+    text-align: center;
+    width: 60px;
+}
+.MediumCircle {
+    -moz-user-select: none;
+/*    background: none repeat scroll 0 0 blue; */
+    border: 2px solid black;
+    border-radius: 128px 128px 128px 128px;
+    box-shadow: 0 0 1px black;
+    color: white;
+    cursor: pointer;
+    height: 124px;
+    overflow: hidden;
+    padding: 64px;
+    position: absolute;
+    text-align: center;
+    width: 124px;
+}
+.LargeCircle {
+    -moz-user-select: none;
+    background: none repeat scroll 0 0 blue;
+    border: 2px solid black;
+    border-radius: 256px 256px 256px 256px;
+    box-shadow: 0 0 1px black;
+    color: white;
+    cursor: pointer;
+    height: 252px;
+    overflow: hidden;
+    padding: 128px;
+    position: absolute;
+    text-align: center;
+    width: 252px;
+}
+.XLargeCircle {
+    -moz-user-select: none;
+    background: none repeat scroll 0 0 blue;
+    border: 2px solid black;
+    border-radius: 512px 512px 512px 512px;
+    box-shadow: 0 0 1px black;
+    color: white;
+    cursor: pointer;
+    height: 508px;
+    overflow: hidden;
+    padding: 256px;
+    position: absolute;
+    text-align: center;
+    width: 508px;
+}
+.NodeMetadata {
+    display: none;
+}
+html, body {
+    height: 100%;
+}
+body {
+    background-color: #A0A58F;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+#background {
+    display: block;
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+}
+#container {
+    background-color: #EDEDE1;
+    border-color: #E9F7C4;
+    border-radius: 32px 32px 32px 32px;
+    border-style: solid;
+    height: 82.5%;
+    left: 2.5%;
+    overflow: hidden;
+    position: relative;
+    top: 5%;
+    width: 95%;
+}
+#header {
+    background-color: #95918F;
+    border-color: #EDEDE1;
+    border-radius: 32px 32px 32px 32px;
+    border-style: solid;
+    color: #75301D;
+    display: table;
+    height: 10%;
+    margin-left: auto;
+    margin-right: auto;
+    overflow: hidden;
+    padding: 0;
+    position: relative;
+    text-align: center;
+    top: 2.5%;
+    width: 40%;
+}
+#header h2 {
+    display: table-cell;
+    margin-bottom: 0;
+    margin-top: 0;
+    text-align: center;
+    vertical-align: middle;
+}
+#header p {
+    display: table-cell;
+    margin-bottom: 0;
+    margin-top: 0;
+    text-align: center;
+    vertical-align: middle;
+}
+#node30
+{
+    background-image: url("0.jpg");
+}
