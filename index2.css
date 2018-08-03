@@ -1,55 +1,90 @@
+:root{
+  --border:#D7CAA8;
+  --background:#20222F;
+  --container:#5D6C97;
+  --nodeBorder:#B0C6FA;
+  --nodeBackground:#93A7EC;
+}
+
 .XSmallCircle {
     -moz-user-select: none;
-    background: none repeat scroll 0 0 blue;
-    border: 2px solid black;
-    border-radius: 32px 32px 32px 32px;
-    box-shadow: 0 0 1px black;
-    color: white;
+    background: none repeat scroll 0 0 var(--nodeBackground);
+    border: 2px solid var(--nodeBorder);
+    border-radius: 46px 46px 46px 46px;
+    height: 42px;
+    width: 42px;
+    line-height: 42px;
+    padding: 23px;
+    box-shadow: 0 0 1px var(--nodeBorder);
+    color: var(--background);
     cursor: pointer;
-    height: 28px;
     overflow: hidden;
-    padding: 16px;
     position: absolute;
     text-align: center;
-    width: 28px;
 }
+.XSmallCircle p {
+    line-height: 1;
+    display: inline-block;
+    vertical-align: middle;
+    margin: -11px;  /* undo half of the padding from the container to maximize the text area */
+    overflow: hidden;
+}
+
 .SmallCircle {
     -moz-user-select: none;
-    background: none repeat scroll 0 0 blue;
-    border: 2px solid black;
+    background: none repeat scroll 0 0 var(--nodeBackground);
+    border: 2px solid var(--nodeBorder);
     border-radius: 64px 64px 64px 64px;
-    box-shadow: 0 0 1px black;
-    color: white;
+    box-shadow: 0 0 1px var(--nodeBorder);
+    color: var(--background);
     cursor: pointer;
     height: 60px;
     overflow: hidden;
     padding: 32px;
     position: absolute;
     text-align: center;
+    line-height: 60px;
     width: 60px;
+}
+.SmallCircle p {
+    line-height: 1;
+    display: inline-block;
+    vertical-align: middle;
+    margin: -16px;  /* undo half of the padding from the container to maximize the text area */
+    overflow: hidden;
 }
 .MediumCircle {
     -moz-user-select: none;
-/*    background: none repeat scroll 0 0 blue; */
-    border: 2px solid black;
+    background: none repeat scroll 0 0 var(--nodeBackground);
+    border: 2px solid var(--nodeBorder);
     border-radius: 128px 128px 128px 128px;
-    box-shadow: 0 0 1px black;
-    color: white;
+    box-shadow: 0 0 1px var(--nodeBorder);
+    color: var(--background);
     cursor: pointer;
     height: 124px;
     overflow: hidden;
     padding: 64px;
     position: absolute;
     text-align: center;
+    line-height: 124px;
     width: 124px;
 }
+.MediumCircle p {
+    line-height: 1;
+    display: inline-block;
+    vertical-align: bottom;
+    margin: -32px;  /* undo half of the padding from the container to maximize the text area */
+    overflow: hidden;
+}
+
+
 .LargeCircle {
     -moz-user-select: none;
-    background: none repeat scroll 0 0 blue;
-    border: 2px solid black;
+    background: none repeat scroll 0 0 var(--nodeBackground);
+    border: 2px solid var(--nodeBorder);
     border-radius: 256px 256px 256px 256px;
-    box-shadow: 0 0 1px black;
-    color: white;
+    box-shadow: 0 0 1px var(--nodeBorder);
+    color: var(--background);
     cursor: pointer;
     height: 252px;
     overflow: hidden;
@@ -60,11 +95,11 @@
 }
 .XLargeCircle {
     -moz-user-select: none;
-    background: none repeat scroll 0 0 blue;
-    border: 2px solid black;
+    background: none repeat scroll 0 0 var(--nodeBackground);
+    border: 2px solid var(--nodeBorder);
     border-radius: 512px 512px 512px 512px;
-    box-shadow: 0 0 1px black;
-    color: white;
+    box-shadow: 0 0 1px var(--nodeBorder);
+    color: var(--background);
     cursor: pointer;
     height: 508px;
     overflow: hidden;
@@ -80,7 +115,7 @@ html, body {
     height: 100%;
 }
 body {
-    background-color: #A0A58F;
+    background-color: var(--background);
     margin: 0;
     padding: 0;
     width: 100%;
@@ -94,11 +129,11 @@ body {
     width: 100%;
 }
 #container {
-    background-color: #EDEDE1;
-    border-color: #E9F7C4;
+    background-color:var(--container);
+    border-color: var(--border);
     border-radius: 32px 32px 32px 32px;
     border-style: solid;
-    height: 82.5%;
+    height: 80%;
     left: 2.5%;
     overflow: hidden;
     position: relative;
@@ -106,37 +141,51 @@ body {
     width: 95%;
 }
 #header {
-    background-color: #95918F;
-    border-color: #EDEDE1;
+    background-color: var(--container);
+    border-color: var(--border);
+    background-image: url("saturn.jpg");
+    background-repeat: no-repeat;
+    background-size:cover;
     border-radius: 32px 32px 32px 32px;
     border-style: solid;
-    color: #75301D;
-    display: table;
-    height: 10%;
+    color: var(--border);
     margin-left: auto;
     margin-right: auto;
     overflow: hidden;
     padding: 0;
+    padding-bottom: 10%;
     position: relative;
     text-align: center;
     top: 2.5%;
     width: 40%;
+    height: 2.5%;
+}
+#headerContent{
+  position: absolute;
+  top: 0; bottom: 0; left: 0px; right: 0px;
+  width:100%;
+  height:100%;
+  display: table;
 }
 #header h2 {
+    position:relative;
+    padding-left: 20px;
+    width:50%;
+    height:100%;
     display: table-cell;
-    margin-bottom: 0;
-    margin-top: 0;
-    text-align: center;
-    vertical-align: middle;
+    text-align: left;
 }
 #header p {
+    position:relative;
+    padding-right: 20px;
+    width:50%;
+    height:100%;
     display: table-cell;
-    margin-bottom: 0;
-    margin-top: 0;
-    text-align: center;
-    vertical-align: middle;
+    text-align: right;
 }
 #node30
 {
     background-image: url("0.jpg");
+    background-repeat: no-repeat;
+    background-size: cover;
 }
