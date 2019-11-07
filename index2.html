@@ -145,22 +145,22 @@ var calculateFrame = function(){
 
       //calculate top repulsion
       force = calculateRepulsion(nodeAry, [node1Pos[0], 0, 50]);
-      if(force[1]<0){force[1]= 10;}
+      if(force[1]<0){force[1]= -.5;}
       addOrModifyNode(newPointTable, pointKeys[x], [node1Pos[0], node1Pos[1]], [force[0], force[1]]);
 
       //calculate bottom repulsion
       force = calculateRepulsion(nodeAry, [node1Pos[0], maxY, 50]);
-      if(force[1]>0){force[1]= -10;}
+      if(force[1]>0){force[1]= .5;}
       addOrModifyNode(newPointTable, pointKeys[x], [node1Pos[0], node1Pos[1]], [force[0], force[1]]);
 
       //calculate left repulsion
       force = calculateRepulsion(nodeAry, [0, node1Pos[1], 50]);
-      if(force[0]<0){force[0]= 10;}
+      if(force[0]<0){force[0]= -.5;}
       addOrModifyNode(newPointTable, pointKeys[x], [node1Pos[0], node1Pos[1]], [force[0], force[1]]);
 
       //calculate right repulsion
       force = calculateRepulsion(nodeAry, [maxX, node1Pos[1], 50]);
-      if(force[0]>0){force[0]= -10;}
+      if(force[0]>0){force[0]= .5;}
       addOrModifyNode(newPointTable, pointKeys[x], [node1Pos[0], node1Pos[1]], [force[0], force[1]]);
    }
    //endrepulsions = new Date().getTime();
@@ -222,7 +222,9 @@ var calculateRepulsion = function(point1, point2){
    vy /= mag;
    force = (10 * 32 * 50)/(mag*mag);
 
-   return [-vx*force, -vy*force];
+	 //cap forces so silly things don't happen.
+	 forceArray = [Math.min(Math.max(-vx*force, -100), 100), Math.min(Math.max(-vy*force, -100), 100)];
+   return forceArray;
 }
 
 var rangeMap = function(xmin, xmax, ymin, ymax, x){
@@ -250,6 +252,7 @@ var start = function(){
 
 
 $(document).ready(function(){
+	 $('img').on('dragstart', function(event) { event.preventDefault(); });
    $(document).mousemove(setMousePos);
    maxX = $("#container").width();
    maxY = $("#container").height();
@@ -300,55 +303,34 @@ var Explode = function(event){
 <body>
         <div id="header"><div id="headerContent"><h2>dlgreen.com</h2><p>The home of dlgreen on the internet</p></div></div>
 	<div id="container">
-                <div id="background"></div>
-                <div id="node1" class="Node SmallCircle"><div class="NodeMetadata">node2,node3,node4,node5,node30</div><p>Professional</p></div>
-		<div id="node2" class="Node XSmallCircle"><div class="NodeMetadata">node1</div><p><a href="https://www.resumonk.com/PkKGWexVVIu80EVeHIPGNQ">Resume</a></p></div>
-		<div id="node3" class="Node XSmallCircle"><div class="NodeMetadata">node1</div><p>Senior Architect</p></div>
-		<div id="node4" class="Node XSmallCircle"><div class="NodeMetadata">node1</div><p>Developer</p></div>
-		<div id="node5" class="Node XSmallCircle"><div class="NodeMetadata">node1</div><p>Engineer</p></div>
+		<div id="background"></div>
+			<div id="node30" class="Node MediumCircle"><div class="NodeMetadata">node21,node11,node1</div><p><img src="0.jpg" alt="David Greenwald"/></p></div>
 
-                <div id="node11" class="Node SmallCircle"><div class="NodeMetadata">node12,node13,node30</div><p>Family</p></div>
-		<div id="node12" class="Node XSmallCircle"><div class="NodeMetadata">node11</div><p>Wife</p></div>
-		<div id="node13" class="Node XSmallCircle"><div class="NodeMetadata">node11</div><p>Children</p></div>
-		<!--<div id="node14" class="Node XSmallCircle"><div class="NodeMetadata">node11</div>14</div>-->
+			 	<div id="node1" class="Node SmallCircle"><div class="NodeMetadata">node2,node3,node4,node5,node6,node30</div><p>Professional</p></div>
+					<div id="node2" class="Node XSmallCircle"><div class="NodeMetadata">node1</div><p><a href="https://www.resumonk.com/PkKGWexVVIu80EVeHIPGNQ"><img src="resume.jpg" alt="Resume"/></a></p></div>
+					<div id="node3" class="Node XSmallCircle"><div class="NodeMetadata">node31,node32,node1</div><p>Senior Architect</p></div>
+						<div id="node31" class="Node XSmallCircle"><div class="NodeMetadata">node3</div><p>Content Delivery</p></div>
+						<div id="node32" class="Node XSmallCircle"><div class="NodeMetadata">node3</div><p><img src="sciencedirect.jpg" alt="ScienceDirect"/></p></div>
+						<div id="node33" class="Node XSmallCircle"><div class="NodeMetadata">node3</div><p><img src="Mendeley.png" alt="Mendeley"/></p></div>
+					<div id="node4" class="Node XSmallCircle"><div class="NodeMetadata">node1</div><p>Developer</p></div>
+					<div id="node5" class="Node XSmallCircle"><div class="NodeMetadata">node1</div><p>Software Engineer</p></div>
+					<div id="node6" class="Node XSmallCircle"><div class="NodeMetadata">node1</div><p>Computer Scientist</p></div>
 
-                <div id="node21" class="Node SmallCircle"><div class="NodeMetadata">node22,node23,node24,node30</div><p>Personal</p></div>
-		<div id="node22" class="Node XSmallCircle"><div class="NodeMetadata">node21</div><p>Gaming</p></div>
-		<div id="node23" class="Node XSmallCircle"><div class="NodeMetadata">node21</div><p>Sailing</p></div>
-		<div id="node24" class="Node XSmallCircle"><div class="NodeMetadata">node21</div><p>Building</p></div>
+				<div id="node11" class="Node SmallCircle"><div class="NodeMetadata">node12,node13,node14,node30</div><p>Family</p></div>
+					<div id="node12" class="Node XSmallCircle"><div class="NodeMetadata">node11</div><p>Wife</p></div>
+					<div id="node13" class="Node XSmallCircle"><div class="NodeMetadata">node11</div><p>Children</p></div>
+					<div id="node14" class="Node XSmallCircle"><div class="NodeMetadata">node11</div><p>Cats</p></div>
 
-                <div id="node30" class="Node MediumCircle"><div class="NodeMetadata">node21,node11,node1</div><p>David Greenwald</p></div>
+				<div id="node21" class="Node SmallCircle"><div class="NodeMetadata">node22,node23,node24,node25,node30</div><p>Personal</p></div>
+					<div id="node22" class="Node XSmallCircle"><div class="NodeMetadata">node221,node222,node21</div><p>Gaming</p></div>
+						<div id="node221" class="Node XSmallCircle"><div class="NodeMetadata">node22</div><p>Board</p></div>
+						<div id="node222" class="Node XSmallCircle"><div class="NodeMetadata">node22</div><p>PC</p></div>
+					<div id="node23" class="Node XSmallCircle"><div class="NodeMetadata">node21</div><p><img src="sailing.jpg" alt="Sailing"/></p></div>
+					<div id="node24" class="Node XSmallCircle"><div class="NodeMetadata">node21</div><p>Beach</p></div>
+					<div id="node25" class="Node XSmallCircle"><div class="NodeMetadata">node21</div><p>SCUBA</p></div>
 
 
-		<!--<div id="node1" class="Node XSmallCircle"><div class="NodeMetadata">node2,node5,node11,node41</div>01</div>
-		<div id="node2" class="Node XSmallCircle"><div class="NodeMetadata">node3,node1</div>02</div>
-		<div id="node3" class="Node XSmallCircle"><div class="NodeMetadata">node4,node2</div>03</div>
-		<div id="node4" class="Node XSmallCircle"><div class="NodeMetadata">node5,node3</div>04</div>
-		<div id="node5" class="Node XSmallCircle"><div class="NodeMetadata">node1,node4</div>05</div>
 
-		<div id="node11" class="Node XSmallCircle"><div class="NodeMetadata">node12,node15,node1,node21</div>11</div>
-		<div id="node12" class="Node XSmallCircle"><div class="NodeMetadata">node13,node11</div>12</div>
-		<div id="node13" class="Node XSmallCircle"><div class="NodeMetadata">node14,node12</div>13</div>
-		<div id="node14" class="Node XSmallCircle"><div class="NodeMetadata">node15,node13</div>14</div>
-		<div id="node15" class="Node XSmallCircle"><div class="NodeMetadata">node11,node14</div>15</div>
-
-		<div id="node21" class="Node XSmallCircle"><div class="NodeMetadata">node22,node25,node11,node31</div>21</div>
-		<div id="node22" class="Node XSmallCircle"><div class="NodeMetadata">node23,node21</div>22</div>
-		<div id="node23" class="Node XSmallCircle"><div class="NodeMetadata">node24,node22</div>23</div>
-		<div id="node24" class="Node XSmallCircle"><div class="NodeMetadata">node25,node23</div>24</div>
-		<div id="node25" class="Node XSmallCircle"><div class="NodeMetadata">node21,node24</div>25</div>
-
-		<div id="node31" class="Node XSmallCircle"><div class="NodeMetadata">node32,node35,node21,node41</div>31</div>
-		<div id="node32" class="Node XSmallCircle"><div class="NodeMetadata">node33,node31</div>32</div>
-		<div id="node33" class="Node XSmallCircle"><div class="NodeMetadata">node34,node32</div>33</div>
-		<div id="node34" class="Node XSmallCircle"><div class="NodeMetadata">node35,node33</div>34</div>
-		<div id="node35" class="Node XSmallCircle"><div class="NodeMetadata">node31,node34</div>35</div>
-
-		<div id="node41" class="Node XSmallCircle"><div class="NodeMetadata">node42,node45,node31,node1</div>41</div>
-		<div id="node42" class="Node XSmallCircle"><div class="NodeMetadata">node43,node41</div>42</div>
-		<div id="node43" class="Node XSmallCircle"><div class="NodeMetadata">node44,node42</div>43</div>
-		<div id="node44" class="Node XSmallCircle"><div class="NodeMetadata">node45,node43</div>44</div>
-		<div id="node45" class="Node XSmallCircle"><div class="NodeMetadata">node41,node44</div>45</div>-->
 
 	</div>
 
