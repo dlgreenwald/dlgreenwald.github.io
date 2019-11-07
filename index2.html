@@ -64,7 +64,36 @@ var calculateFrame = function(){
    starttime = new Date().getTime();
    newPointTable = new HashTable({});
 
-   //calculate attactions
+	 //Always attract central(first) node to Centerpoint.
+	 centerPos = [maxX/2, maxY/2];
+
+	 node1 = pointTable.getItem("node30");
+	 node1Pos = node1[0];
+
+	 vx = centerPos[0]-node1Pos[0];
+	 vy = centerPos[1]-node1Pos[1];
+		//
+	 truemag = Math.sqrt(vx*vx+vy*vy);
+	 mag = truemag - node1[2];
+	 //mag = Math.sqrt(vx*vx+vy*vy);
+
+	 vx /= truemag;
+	 vy /= truemag;
+		//
+	 if(mag < 0){
+	   mag = 0;
+	 }
+
+	 //force = ((node1[2]) * (node2[2]) * mag)/(Math.abs(node1[2]+node2[2])*300);
+	 //force = ((node1[2]) * (node2[2]) * mag)/(10000);
+	 force = (32 * 32 * mag)/(10000);
+
+	 //console.log(relationList[i][0] + " is attracted to " + relationList[i][1] + " with a force of "+ dv);
+	 addOrModifyNode(newPointTable, "node30", [node1Pos[0], node1Pos[1]], [vx*force, vy*force]);
+		// //addOrModifyNode(newPointTable, relationList[i][1], [node2Pos[0], node2Pos[1]], [-vx*force, -vy*force]);
+
+
+   //calculate attactions for all relationships
    for(i=0; i<relationList.length; i++){
       node1 = pointTable.getItem(relationList[i][0]);
       node2 = pointTable.getItem(relationList[i][1]);
@@ -265,9 +294,6 @@ $(document).ready(function(){
    //console.log(relationList);
    $('#container').fadeIn(2000);
 
-   //set background onclick function (yea exploding)
-   $('#background').mousedown(Explode);
-
    start();
    calculateFrame();
    setTimeout(function() {stop()},30000);
@@ -290,15 +316,6 @@ var endDrag = function(event){
    setTimeout(function() {stop()},30000);
 }
 
-var Explode = function(event){
-   //@todo, allow for multiple bangs by adding a random string to the end of the item name.
-   //make weeker and last longer?
-   inBang = true;
-   pointTable.setItem('bang', [[event.pageX, event.pageY], 20, 100]);
-   start();
-   //alert("BANG");
-}
-
 </script>
 <body>
         <div id="header"><div id="headerContent"><h2>dlgreen.com</h2><p>The home of dlgreen on the internet</p></div></div>
@@ -310,8 +327,8 @@ var Explode = function(event){
 					<div id="node2" class="group Node"><div class="NodeMetadata">node1</div><div class="XSmallCircle"><p><a href="https://www.resumonk.com/PkKGWexVVIu80EVeHIPGNQ"><img src="resume.jpg" alt="Resume"/></a></p></div><span class="caption">Resume</span></div>
 					<div id="node3" class="group Node"><div class="NodeMetadata">node31,node32,node1</div><div class="XSmallCircle"><p><img src="architect.png" alt="Architect"/></p></div><span class="caption">Architecture</span></div>
 						<div id="node31" class="group Node"><div class="NodeMetadata">node3</div><div class="XSmallCircle"><p><img src="contentDelivery.jpg" alt="Content Delivery"/></p></div><span class="caption">Content Delivery</span></div>
-						<div id="node32" class="group Node"><div class="NodeMetadata">node3</div><div class="XSmallCircle"><p><img src="sciencedirect.jpg" alt="ScienceDirect"/></p></div><span class="caption">ScienceDirect</span></div>
-						<div id="node33" class="group Node"><div class="NodeMetadata">node3</div><div class="XSmallCircle"><p><img src="Mendeley.png" alt="Mendeley"/></p></div><span class="caption">Mendeley</span></div>
+						<div id="node32" class="group Node"><div class="NodeMetadata">node3</div><div class="XSmallCircle"><p><a href="https://www.sciencedirect.com/"><img src="sciencedirect.jpg" alt="ScienceDirect"/></a></p></div><span class="caption">ScienceDirect</span></div>
+						<div id="node33" class="group Node"><div class="NodeMetadata">node3</div><div class="XSmallCircle"><p><a href="https://www.mendeley.com/"><img src="Mendeley.png" alt="Mendeley"/></a></p></div><span class="caption">Mendeley</span></div>
 					<div id="node4" class="group Node"><div class="NodeMetadata">node1</div><div class="XSmallCircle"><p><img src="microservices.png" alt="Java"/></p></div><span class="caption">Microservices</span></div>
 					<div id="node5" class="group Node"><div class="NodeMetadata">node1</div><div class="XSmallCircle"><p><img src="java.jpg" alt="Java"/></p></div><span class="caption">Java</span></div>
 					<div id="node6" class="group Node"><div class="NodeMetadata">node1</div><div  class="XSmallCircle"><p><img src="aws.png" alt="AWS"/></p></div><span class="caption">AWS</span></div>
