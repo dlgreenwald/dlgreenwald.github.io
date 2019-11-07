@@ -53,8 +53,12 @@
     line-height: 1;
     display: inline-block;
     vertical-align: middle;
-    margin: -16px;  /* undo half of the padding from the container to maximize the text area */
+    margin: -32px;  /* undo half of the padding from the container to maximize the text area */
     overflow: hidden;
+}
+
+.SmallCircle img {
+  height: 150px;
 }
 .MediumCircle {
     -moz-user-select: none;
@@ -117,6 +121,19 @@
 }
 .NodeMetadata {
     display: none;
+}
+
+.group{
+  position: absolute;
+  width: 92px;
+  text-align: center;
+  top: 90px;
+  margin: -23px;
+}
+
+.caption {
+  position: relative;
+  top: 95px;
 }
 
 html, body {
