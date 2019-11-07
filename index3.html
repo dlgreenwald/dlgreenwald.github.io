@@ -1,0 +1,267 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <style>
+      body {
+        margin: 0px;
+        padding: 0px;
+      }
+      canvas {
+        border: 1px solid #9C9898;
+      }
+    </style>
+    <script src="kinetic-v3.9.6.min.js"></script>
+    <script src="hashtable.js"></script>
+    <script>
+      var maxX = 800;
+      var maxY = 800;
+
+      maxDeltaV = 10;
+
+	  var Nodes = {"list":[
+	                        {"name":"node1", "children":["node2", "node5", "node11", "node41"]},
+	                        {"name":"node2", "children":["node3", "node1"]},
+	                        {"name":"node3", "children":["node4", "node2"]},
+	                        {"name":"node4", "children":["node5", "node3"]},
+	                        {"name":"node5", "children":["node1", "node4"]},
+
+                                {"name":"node11", "children":["node12", "node15", "node1", "node21"]},
+                                {"name":"node12", "children":["node13", "node11"]},
+                                {"name":"node13", "children":["node14", "node12"]},
+                                {"name":"node14", "children":["node15", "node13"]},
+                                {"name":"node15", "children":["node11", "node14"]},
+
+                                {"name":"node21", "children":["node22", "node25", "node11", "node31"]},
+                                {"name":"node22", "children":["node23", "node21"]},
+                                {"name":"node23", "children":["node24", "node22"]},
+                                {"name":"node24", "children":["node25", "node23"]},
+                                {"name":"node25", "children":["node21", "node24"]},
+
+                                {"name":"node31", "children":["node32", "node35", "node21", "node41"]},
+                                {"name":"node32", "children":["node33", "node31"]},
+                                {"name":"node33", "children":["node34", "node32"]},
+                                {"name":"node34", "children":["node35", "node33"]},
+                                {"name":"node35", "children":["node31", "node34"]},
+
+                                {"name":"node41", "children":["node42", "node45", "node31", "node1"]},
+                                {"name":"node42", "children":["node43", "node41"]},
+                                {"name":"node43", "children":["node44", "node42"]},
+                                {"name":"node44", "children":["node45", "node43"]},
+                                {"name":"node45", "children":["node41", "node44"]}
+
+	                      ]
+	  			 };
+
+
+	  var relationList = [];
+
+
+      window.onload = function() {
+        var stage = new Kinetic.Stage({
+          container: "container",
+          width: maxX,
+          height: maxY
+        });
+
+        layer = new Kinetic.Layer();
+        stage.add(layer);
+
+		renderNodes(layer, Nodes.list);
+
+		//console.log(relationList);
+
+		stage.draw();
+
+		stage.onFrame(function(frame){
+		  console.log("calculating frame");
+		  calculateFrame(layer);
+		  stage.draw();
+        });
+
+		stage.start();
+		//setTimeout(function() {stage.stop()},5000);
+
+      };
+
+      var calculateFrame = function(layer){
+        newPointTable = new HashTable({});
+        //calculate attactions
+        for(i=0; i<relationList.length; i++){
+        	node1 = layer.get('.'+relationList[i][0])[0];
+			node2 = layer.get('.'+relationList[i][1])[0];
+			node1Pos = node1.getPosition();
+			node2Pos = node2.getPosition();
+
+			vx = node2Pos.x-node1Pos.x;
+			vy = node2Pos.y-node1Pos.y;
+
+      	    mag = Math.sqrt(vx*vx+vy*vy);
+
+      	    vx /= mag;
+      	    vy /= mag;
+
+      	    dv = force = (node1.getChildren()[0].getRadius() * node2.getChildren()[0].getRadius() * mag)/(100000);
+
+      	    //console.log(relationList[i][0] + " is attracted to " + relationList[i][1] + " with a force of "+ dv);
+            addOrModifyNode(newPointTable, relationList[i][0], [node1Pos.x, node1Pos.y], [vx*dv, vy*dv]);
+            addOrModifyNode(newPointTable, relationList[i][1], [node2Pos.x, node2Pos.y], [-vx*dv, -vy*dv]);
+
+        }
+
+        //calculate repulsions
+		for(x=0; x<Nodes.list.length; x++){
+			for(y=x; y<Nodes.list.length; y++){
+			    if(x==y){
+			        continue;
+			    }
+			        node1 = layer.get('.'+Nodes.list[x].name)[0];
+				node2 = layer.get('.'+Nodes.list[y].name)[0];
+				node1Pos = node1.getPosition();
+				node2Pos = node2.getPosition();
+
+				vx = node2Pos.x-node1Pos.x;
+				vy = node2Pos.y-node1Pos.y;
+
+				mag = Math.sqrt(vx*vx+vy*vy);
+
+				vx /= mag;
+      	   	                vy /= mag;
+
+				force = (10 * node1.getChildren()[0].getRadius() * node2.getChildren()[0].getRadius())/(mag*mag);
+				//console.log(Nodes.list[x].name + " is repulsed by " + Nodes.list[y].name + " with a force of "+ force);
+                                addOrModifyNode(newPointTable, Nodes.list[x].name, [node1Pos.x, node1Pos.y], [-vx*force, -vy*force]);
+                                addOrModifyNode(newPointTable, Nodes.list[y].name, [node2Pos.x, node2Pos.y], [vx*force, vy*force]);
+
+			}
+		}
+        //calculate edge repulsions
+        for(i=0;i<Nodes.list.length; i++){
+           node = layer.get('.'+Nodes.list[i].name)[0];
+           nodePos = node.getPosition();
+           nodeAry = [nodePos.x, nodePos.y, node1.getChildren()[0].getRadius()];
+	   //calculate top repulsion
+           force = calculateRepulsion(nodeAry, [nodePos.x, 0, 50]);
+           addOrModifyNode(newPointTable, Nodes.list[i].name, [nodePos.x, nodePos.y], [force[0], force[1]]);
+           //calculate bottom repulsion
+           force = calculateRepulsion(nodeAry, [nodePos.x, maxY, 50]);
+           addOrModifyNode(newPointTable, Nodes.list[i].name, [nodePos.x, nodePos.y], [force[0], force[1]]);
+           //calculate left repulsion
+           force = calculateRepulsion(nodeAry, [0, nodePos.y, 50]);
+           addOrModifyNode(newPointTable, Nodes.list[i].name, [nodePos.x, nodePos.y], [force[0], force[1]]);
+           //calculate right repulsion
+           force = calculateRepulsion(nodeAry, [maxX, nodePos.y, 50]);
+           addOrModifyNode(newPointTable, Nodes.list[i].name, [nodePos.x, nodePos.y], [force[0], force[1]]);
+
+        }
+
+
+
+        //move nodes
+        keys = newPointTable.keys();
+        for(i=0; i<keys.length ;i++){
+			node = layer.get('.'+keys[i])[0];
+			node.setX(newPointTable.getItem(keys[i])[0]);
+			node.setY(newPointTable.getItem(keys[i])[1]);
+        }
+      }
+
+      var calculateRepulsion = function(point1, point2){
+         vx = point2[0]-point1[0];
+         vy = point2[1]-point1[1];
+
+         mag = Math.sqrt(vx*vx+vy*vy);
+
+         vx /= mag;
+         vy /= mag;
+         force = (10 * point1[2] * point2[2])/(mag*mag);
+
+         return [-vx*force, -vy*force];
+      }
+
+      var addOrModifyNode = function(newPointTable, name, Cpos, dv){
+         if(!newPointTable.hasItem(name)){
+            newPointTable.setItem(name, [Cpos[0]+(dv[0]),Cpos[1]+(dv[1]) ]);
+         }else{
+            oldpoint = newPointTable.getItem(name);
+            newPointTable.setItem(name, [oldpoint[0]+(dv[0]),oldpoint[1]+(dv[1]) ]);
+         }
+         return newPointTable;
+      }   
+
+      var renderNodes = function(layer, nodelist){
+		for(i=0;i<nodelist.length;i++){
+			layer.add(createNode(nodelist[i].name, 30));
+		}
+
+		for(i=0;i<nodelist.length;i++){
+			parentNode = layer.get('.'+nodelist[i].name)[0];
+			for(var y=0;y<nodelist[i].children.length;y++){
+				childNode = layer.get('.'+nodelist[i].children[y])[0];
+				//layer.add(joinNodes(parentNode, childNode));
+				relationList.push([nodelist[i].name, nodelist[i].children[y]]);
+			}
+		}
+
+      }
+
+      var joinNodes = function(node1, node2){
+        node1Pos = node1.getPosition();
+        node2Pos = node2.getPosition();
+
+        line = new Kinetic.Line({
+          points: [node1Pos.x, node1Pos.y, node2Pos.x, node2Pos.y],
+          stroke:"black",
+          strokeWidth:"2",
+          name: node1.getName+node2.getName
+        });
+
+        return line;
+
+      }
+
+      var createNode = function(name, size){
+      	group = new Kinetic.Group({
+      	  x: Math.floor((Math.random()*maxX)+1),
+      	  y: Math.floor((Math.random()*maxY)+1),
+      	  draggable: true,
+      	  name: name
+      	});
+
+      	 var circle = new Kinetic.Circle({
+		          x: 0,
+		          y: 0,
+		          radius: size,
+		          fill: "#00D2FF",
+		          stroke: "black",
+		          strokeWidth: 4
+        });
+
+        var text = new Kinetic.Text({
+          x:0,
+          y:0,
+          text: name,
+          textFill: "black",
+          align: "center",
+          verticalAlign: "middle"
+        });
+
+      	group.add(circle);
+      	group.add(text);
+
+        // add cursor styling
+	    group.on("mouseover", function() {
+	      document.body.style.cursor = "pointer";
+	    });
+	    group.on("mouseout", function() {
+	      document.body.style.cursor = "default";
+        });
+
+        return group;
+      }
+
+    </script>
+  </head>
+  <body onmousedown="return false;">
+    <div id="container"></div>
+  </body>
+</html>
