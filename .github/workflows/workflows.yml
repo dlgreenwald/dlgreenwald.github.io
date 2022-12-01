@@ -1,0 +1,50 @@
+name: Dlgreen.com - Frontend CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    steps:
+      - name: Use Checkout
+        uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: 'GCP Workflow Auth'
+        uses: 'google-github-actions/auth@v0'
+        with:
+          workload_identity_provider: '${{ secrets.GCP_WORKLOAD_ID_PROVIDER }}'
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Use Google Cloud
+        uses: google-github-actions/setup-gcloud@v0
+
+      - name: Configure docker for GCP
+        run: gcloud auth configure-docker
+
+        # build and test the apps     
+      - name: build
+        run: |
+          npm run build
+      - name: Build docker image
+        run:  docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/dlgreencom-frontend:latest . 
+
+      - name: Push to Google Container Registry
+        run:  docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/dlgreencom-frontend:latest 
