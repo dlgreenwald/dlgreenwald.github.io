@@ -35,9 +35,6 @@ jobs:
         run: gcloud auth configure-docker
 
         # build and test the apps     
-      - name: build
-        run: |
-          npm run build
       - name: Build docker image
         run:  docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/dlgreencom-frontend:latest . 
 
